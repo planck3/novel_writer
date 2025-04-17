@@ -316,7 +316,7 @@ class NovelWriter:
         content = self.text_content.get("1.0", "end-1c")
         
         # 计算总页数和总字数
-        total_chars = len(content.replace(" ", "").replace("\n", "").replace("\t", ""))  # 不计算空格和换行
+        total_chars = len(content.replace(" ", "").replace("　", "").replace("\n", "").replace("\t", ""))  # 不计算空格和换行
         total_pages = max(1, (total_chars + self.chars_per_page - 1) // self.chars_per_page)
         
         # 确保当前页在有效范围内
@@ -368,8 +368,8 @@ class NovelWriter:
 
     def on_text_modified(self, event):
         """文本修改事件处理"""
-        # 滚动到文本末尾
-        self.text_content.see(tk.END)
+        # 移除自动滚动到文本末尾的行为
+        # self.text_content.see(tk.END)  # 注释掉这行
         
         # 更新预览
         self.update_preview()
