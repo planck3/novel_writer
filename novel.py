@@ -132,9 +132,28 @@ class NovelWriter:
         return 'break'  # 阻止默认的Tab行为
 
     def handle_space(self, event):
-        """处理空格键事件，将半角空格转换为全角空格"""
-        self.text_content.insert(tk.INSERT, '　')  # 插入一个全角空格
-        return 'break'  # 阻止默认的空格键行为
+        """处理空格键事件，根据上下文智能转换空格类型"""
+        try:
+            # 检查是否正在进行中文输入
+            im_window = self.text_content.focus_get()
+            if hasattr(im_window, '_ime_position') or hasattr(im_window, 'im_active'):
+                return None  # 正在进行中文输入，不拦截空格键
+
+            # 获取当前光标位置的前一个字符
+            current_pos = self.text_content.index(tk.INSERT)
+            prev_pos = f"{current_pos}-1c"
+            prev_char = self.text_content.get(prev_pos, current_pos)
+            
+            # 如果前一个字符是英文字母或数字，使用半角空格
+            if prev_char and (prev_char.isascii() or prev_char.isdigit()):
+                self.text_content.insert(tk.INSERT, ' ')  # 插入半角空格
+            else:
+                self.text_content.insert(tk.INSERT, '　')  # 插入全角空格
+            return None
+            return 'break'  # 阻止默认的空格键行为
+        except:
+            # 如果出错，使用默认的半角空格
+            return None  # 让系统处理空格键
 
     def create_preview_button(self):
         """创建预览按钮"""
