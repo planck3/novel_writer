@@ -330,39 +330,40 @@ class NovelWriter:
         """更新预览内容"""
         if not self.preview_window or not self.preview_window.winfo_exists():
             return
-            
+
         # 获取当前文本内容
         content = self.text_content.get("1.0", "end-1c")
-        
-        # 计算总页数和总字数
-        total_chars = len(content.replace(" ", "").replace("　", "").replace("\n", "").replace("\t", ""))  # 不计算空格和换行
+
+        # 计算实际字数（根据需求选择统计方式）
+        actual_chars = len(''.join(char for char in content if not char.isspace()))  # 严格字符数（去掉所有空白字符）
+        # 或者：actual_chars = len(content)  # 保留格式的字符数
+
+        # 计算分页
+        total_chars = len(content)
         total_pages = max(1, (total_chars + self.chars_per_page - 1) // self.chars_per_page)
-        
+
         # 确保当前页在有效范围内
-        if self.current_page >= total_pages:
-            self.current_page = max(0, total_pages - 1)
-        
+        self.current_page = min(max(0, self.current_page), total_pages - 1)
+
         # 计算当前页的内容范围
         start_char = self.current_page * self.chars_per_page
         end_char = min(start_char + self.chars_per_page, total_chars)
-        
+
         # 更新预览文本
         self.preview_text.config(state=tk.NORMAL)
         self.preview_text.delete("1.0", tk.END)
-        
+
         if total_chars > 0:
+            # 获取当前页内容，保持原始格式
             page_content = content[start_char:end_char]
             self.preview_text.insert("1.0", page_content)
-            
+
             # 添加页码信息和总字数
-            page_info = f"\n\n--- 第 {self.current_page + 1} 页 / 共 {total_pages} 页 ---(总字数：{total_chars})"
+            page_info = f"\n\n--- 第 {self.current_page + 1} 页 / 共 {total_pages} 页 ---\n(总字数：{actual_chars})"
             self.preview_text.insert(tk.END, page_info)
-            
-            # 确保页码信息可见
-            self.preview_text.see(tk.END)
         else:
             self.preview_text.insert("1.0", "开始创作您的小说...")
-            
+
         self.preview_text.config(state=tk.DISABLED)
 
     def prev_page(self):
